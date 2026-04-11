@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ASSET_TYPES } from "../constants";
 import { Modal } from "./ui";
 import { CryptoSearch } from "./CryptoSearch";
+import { StockSearch } from "./StockSearch";
 
 export function PositionModal({ pos, onSave, onClose }) {
   const [form, setForm] = useState(pos || {
@@ -55,12 +56,10 @@ export function PositionModal({ pos, onSave, onClose }) {
       )}
 
       {needsStock && (
-        <div className="form-row">
-          <label className="form-label">Ticker</label>
-          <input className="form-input" placeholder="AAPL, MSFT, AMZN..." value={form.symbol || ""}
-            onChange={e => set("symbol", e.target.value.toUpperCase())} />
-          <div className="hint">Símbolo de Yahoo Finance. Ej: AAPL (Apple), SAN.MC (Santander)</div>
-        </div>
+        <StockSearch
+          value={form.symbol || ""}
+          onSelect={(symbol, name) => { set("symbol", symbol); if (!form.name) set("name", name); }}
+        />
       )}
 
       <div className="form-row-2">
