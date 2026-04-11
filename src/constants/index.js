@@ -7,7 +7,7 @@
 export const ASSET_TYPES = [
   { value: "fund",   label: "Fondo de Inversión" },
   { value: "etf",    label: "ETF" },
-  { value: "gold",   label: "Oro (EUR/g)" },
+  { value: "stock",  label: "Acción" },
   { value: "crypto", label: "Criptomoneda" },
 ];
 
