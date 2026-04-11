@@ -142,7 +142,7 @@ export function PortfolioScreen({ user, onLogout }) {
               </div>
               <div className="pos-type">
                 {ASSET_TYPES.find(t => t.value === p.type)?.label}
-                {p.type === "crypto" ? ` · ${p.symbol}` : p.isin ? ` · ${p.isin}` : ""}
+                {p.type === "crypto" || p.type === "stock" ? ` · ${p.symbol}` : p.isin ? ` · ${p.isin}` : ""}
                 {p.currentPrice != null
                   ? ` · ${fmtEur(p.currentPrice)}`
                   : p.priceError ? ` · ${p.priceError}` : " · cargando…"}
