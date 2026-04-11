@@ -13,8 +13,8 @@ export function PositionModal({ pos, onSave, onClose }) {
   });
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const needsISIN   = form.type === "fund" || form.type === "etf";
-  const needsManual = form.type === "gold";
+  const needsISIN  = form.type === "fund" || form.type === "etf";
+  const needsStock = form.type === "stock";
 
   const handleSave = () => {
     if (!form.name || !form.units) return;
@@ -54,9 +54,18 @@ export function PositionModal({ pos, onSave, onClose }) {
         />
       )}
 
+      {needsStock && (
+        <div className="form-row">
+          <label className="form-label">Ticker</label>
+          <input className="form-input" placeholder="AAPL, MSFT, AMZN..." value={form.symbol || ""}
+            onChange={e => set("symbol", e.target.value.toUpperCase())} />
+          <div className="hint">Símbolo de Yahoo Finance. Ej: AAPL (Apple), SAN.MC (Santander)</div>
+        </div>
+      )}
+
       <div className="form-row-2">
         <div className="form-row" style={{ marginBottom: 0 }}>
-          <label className="form-label">{form.type === "gold" ? "Gramos" : "Participaciones"}</label>
+          <label className="form-label">Participaciones</label>
           <input className="form-input" type="number" min="0" step="any" placeholder="0.00"
             value={form.units} onChange={e => set("units", e.target.value)} />
         </div>
