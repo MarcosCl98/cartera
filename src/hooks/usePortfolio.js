@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import * as sb from "../api/supabase";
-import { fetchFundPrice, fetchCrypto, fetchGold } from "../api/prices";
+import { fetchFundPrice, fetchCrypto } from "../api/prices";
 import { STORAGE_KEY, SNAP_KEY } from "../constants";
 
 // ── localStorage como caché offline ──────────────────────────────────────────
@@ -77,12 +77,13 @@ export function usePortfolio(userId) {
         const symbol = pos.type === "bitcoin" ? "BTC" : (pos.symbol || "BTC");
         return { price: await fetchCrypto(symbol), history: [], source: "yahoo" };
       }
-      if (pos.type === "gold") {
+      if (pos.type === "stock") {
+        // Acciones: fetch por ticker (symbol) en Yahoo Finance
         try {
-          return { price: await fetchGold(), source: "metals" };
+          const r = await fetchFundPrice(pos.symbol);
+          return { price: r.price, history: r.history || [], source: "yahoo" };
         } catch {
-          if (pos.manualPrice) return { price: parseFloat(pos.manualPrice), source: "manual" };
-          return { price: null, error: "No disponible" };
+          return { price: null, history: [], error: "Ticker no encontrado" };
         }
       }
       if (pos.isin) {
