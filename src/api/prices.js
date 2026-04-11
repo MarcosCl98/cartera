@@ -187,7 +187,7 @@ export async function fetchChartSeries(positions, range, interval) {
 
       if (pos.type === "bitcoin") symbol = "BTC-EUR";
       else if (pos.type === "crypto") symbol = `${pos.symbol || "BTC"}-EUR`;
-      else if (pos.type === "gold") symbol = "SGLN.MI";
+      else if (pos.type === "stock" && pos.symbol) symbol = pos.symbol;
       else if (pos.isin) {
         try {
           const sr = await fetch(proxy(`https://query2.finance.yahoo.com/v1/finance/search?q=${pos.isin}&quotesCount=1&newsCount=0`));
