@@ -227,19 +227,18 @@ export async function searchStocks(query) {
   const d = await r.json();
 
   return (d?.quotes || [])
-    .filter(item => item.quoteType === "EQUITY" && item.symbol && item.longname)
+    .filter(item => item.quoteType === "EQUITY" && item.symbol && (item.longname || item.shortname))
     .slice(0, 6)
     .map(item => ({
       symbol: item.symbol,
       name: item.longname || item.shortname || item.symbol,
       exchange: item.exchDisp || "",
-      // Logo vía Clearbit usando el dominio inferido del ticker
-      logo: `https://logo.clearbit.com/${inferDomain(item.symbol, item.longname)}`,
+      // Logo vía Google Favicons (gratuito, sin CORS)
+      logo: `https://www.google.com/s2/favicons?domain=${getStockDomain(item.symbol)}&sz=64`,
     }));
 }
 
-function inferDomain(symbol, name) {
-  // Mapa de tickers conocidos a dominios
+function getStockDomain(symbol) {
   const known = {
     "AAPL": "apple.com", "MSFT": "microsoft.com", "GOOGL": "google.com",
     "GOOG": "google.com", "AMZN": "amazon.com", "META": "meta.com",
@@ -250,16 +249,10 @@ function inferDomain(symbol, name) {
     "TEF.MC": "telefonica.com", "IBE.MC": "iberdrola.com", "REP.MC": "repsol.com",
     "ASML": "asml.com", "SAP": "sap.com", "NVO": "novonordisk.com",
     "MC.PA": "lvmh.com", "OR.PA": "loreal.com", "TTE.PA": "totalenergies.com",
-    "BRK-B": "berkshirehathaway.com", "JPM": "jpmorganchase.com",
-    "V": "visa.com", "MA": "mastercard.com", "BAC": "bankofamerica.com",
-    "WMT": "walmart.com", "DIS": "disney.com", "KO": "coca-cola.com",
+    "JPM": "jpmorganchase.com", "V": "visa.com", "MA": "mastercard.com",
+    "BAC": "bankofamerica.com", "WMT": "walmart.com", "DIS": "disney.com",
+    "KO": "coca-cola.com", "UBER": "uber.com", "SPOT": "spotify.com",
+    "SHOP": "shopify.com", "COIN": "coinbase.com", "SQ": "block.xyz",
   };
-  if (known[symbol]) return known[symbol];
-  // Fallback: usar nombre de empresa para inferir dominio
-  const clean = (name || "").toLowerCase()
-    .replace(/,?\s*(inc|corp|ltd|plc|sa|ag|nv|se|group|holdings?|co)\.?$/i, "")
-    .trim()
-    .replace(/\s+/g, "")
-    .replace(/[^a-z0-9]/g, "");
-  return `${clean}.com`;
+  return known[symbol] || "yahoo.com";
 }
