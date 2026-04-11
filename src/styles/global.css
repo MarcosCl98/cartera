@@ -1,0 +1,166 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   styles/global.css
+   Todos los estilos globales. Los tokens de diseño en :root.
+   Al migrar a React Native se sustituye este archivo por StyleSheet.create().
+───────────────────────────────────────────────────────────────────────────── */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #000000;
+  --surface:  #1c1c1e;
+  --surface2: #2c2c2e;
+  --surface3: #3a3a3c;
+  --border:   #2c2c2e;
+  --accent:   #30d158;
+  --accent2:  #0a84ff;
+  --red:      #ff453a;
+  --text:     #ffffff;
+  --text2:    #ebebf5cc;
+  --text3:    #ebebf566;
+  --radius:   16px;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Layout ── */
+.app { max-width: 430px; margin: 0 auto; padding: 0 0 100px; }
+@media (min-width: 430px) {
+  .app { border-left: 1px solid var(--border); border-right: 1px solid var(--border); }
+}
+
+/* ── Header ── */
+.header { padding: 56px 24px 8px; display: flex; justify-content: space-between; align-items: flex-start; }
+.header-title { font-size: 13px; color: var(--text3); font-weight: 500; letter-spacing: 0.02em; text-transform: uppercase; }
+.refresh-btn { background: var(--surface); border: none; color: var(--text2); font-family: inherit; font-size: 13px; font-weight: 500; padding: 8px 14px; border-radius: 20px; cursor: pointer; transition: background 0.15s; }
+.refresh-btn:hover { background: var(--surface2); }
+.refresh-btn:disabled { opacity: 0.4; cursor: default; }
+
+/* ── Hero ── */
+.hero { padding: 8px 24px 32px; }
+.hero-value { font-size: 52px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; color: var(--text); }
+.hero-sub { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; background: var(--surface); padding: 8px 14px; border-radius: 20px; font-size: 14px; font-weight: 500; }
+.hero-sub.up { color: var(--accent); }
+.hero-sub.down { color: var(--red); }
+
+/* ── Section label ── */
+.section-label { font-size: 20px; font-weight: 700; color: var(--text); padding: 0 24px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.add-btn { background: var(--surface2); border: none; color: var(--text2); font-family: inherit; font-size: 13px; font-weight: 600; padding: 7px 14px; border-radius: 20px; cursor: pointer; transition: background 0.15s; }
+.add-btn:hover { background: var(--surface3); }
+
+/* ── Chart ── */
+.chart-wrap { margin: 0 16px 24px; background: var(--surface); border-radius: var(--radius); padding: 20px; }
+
+/* ── Donut ── */
+.donut-wrap { margin: 0 16px 24px; background: var(--surface); border-radius: var(--radius); padding: 20px; }
+.donut-inner { display: flex; align-items: center; gap: 20px; }
+.donut-legend { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.legend-item { display: flex; align-items: center; gap: 10px; }
+.legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.legend-name { color: var(--text2); flex: 1; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+.legend-pct { font-size: 13px; font-weight: 600; color: var(--text); min-width: 36px; text-align: right; }
+.legend-val { font-size: 12px; color: var(--text3); min-width: 64px; text-align: right; }
+
+/* ── Posiciones ── */
+.positions { display: flex; flex-direction: column; gap: 2px; padding: 0 16px; margin-bottom: 24px; }
+.position { background: var(--surface); padding: 16px; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; gap: 4px 12px; transition: background 0.15s; }
+.position:first-child  { border-radius: var(--radius) var(--radius) 4px 4px; }
+.position:last-child   { border-radius: 4px 4px var(--radius) var(--radius); }
+.position:only-child   { border-radius: var(--radius); }
+.position:not(:first-child):not(:last-child) { border-radius: 4px; }
+.position:hover { background: var(--surface2); }
+.pos-name  { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pos-type  { font-size: 12px; color: var(--text3); font-weight: 400; }
+.pos-value { font-size: 17px; font-weight: 700; color: var(--text); text-align: right; }
+.pos-gain  { font-size: 13px; font-weight: 500; text-align: right; }
+.pos-gain.up   { color: var(--accent); }
+.pos-gain.down { color: var(--red); }
+.icon-btn { background: var(--surface2); border: none; color: var(--text3); cursor: pointer; font-size: 13px; padding: 6px 12px; border-radius: 10px; transition: all 0.15s; font-family: inherit; font-weight: 500; }
+.icon-btn:hover { background: var(--surface3); color: var(--text); }
+.icon-btn.del:hover { background: rgba(255,69,58,0.15); color: var(--red); }
+
+/* ── Animaciones ── */
+.price-loading { color: var(--text3); font-size: 13px; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:0.3} 50%{opacity:1} }
+
+/* ── Summary ── */
+.summary { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; margin: 0 16px 24px; }
+.card { background: var(--surface); padding: 16px; }
+.card:first-child { border-radius: var(--radius) 4px 4px var(--radius); }
+.card:last-child  { border-radius: 4px var(--radius) var(--radius) 4px; }
+.card-label { font-size: 12px; color: var(--text3); font-weight: 500; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+.card-value { font-size: 20px; font-weight: 700; color: var(--text); }
+
+/* ── Modales ── */
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: flex; align-items: flex-end; justify-content: center; backdrop-filter: blur(8px); }
+.modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 28px 24px 48px; width: 100%; max-width: 430px; max-height: 90vh; overflow-y: auto; }
+.modal-handle { width: 36px; height: 4px; background: var(--surface3); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 24px; }
+
+/* ── Formularios ── */
+.form-row { margin-bottom: 14px; }
+.form-label { font-size: 12px; color: var(--text3); font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 8px; display: block; }
+.form-input { width: 100%; background: var(--surface2); border: none; color: var(--text); font-family: inherit; font-size: 16px; font-weight: 500; padding: 14px 16px; border-radius: 12px; outline: none; transition: background 0.15s; }
+.form-input:focus { background: var(--surface3); }
+.form-input::placeholder { color: var(--text3); }
+.form-select { width: 100%; background: var(--surface2); border: none; color: var(--text); font-family: inherit; font-size: 16px; font-weight: 500; padding: 14px 16px; border-radius: 12px; outline: none; cursor: pointer; appearance: none; }
+.form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.modal-actions { display: flex; gap: 10px; margin-top: 24px; }
+.btn-primary { flex: 1; background: var(--text); color: #000; font-family: inherit; font-size: 16px; font-weight: 700; padding: 16px; border: none; border-radius: 14px; cursor: pointer; transition: opacity 0.15s; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.4; cursor: default; }
+.btn-secondary { flex: 0; background: var(--surface2); border: none; color: var(--text2); font-family: inherit; font-size: 16px; font-weight: 600; padding: 16px 20px; border-radius: 14px; cursor: pointer; }
+.hint { font-size: 12px; color: var(--text3); margin-top: 6px; }
+.last-update { font-size: 12px; color: var(--text3); text-align: right; padding: 0 24px; margin-bottom: 12px; }
+
+/* ── Empty state ── */
+.empty-state { text-align: center; padding: 48px 20px; color: var(--text3); font-size: 14px; margin: 0 16px; background: var(--surface); border-radius: var(--radius); }
+.empty-state .big { font-size: 40px; margin-bottom: 12px; }
+
+/* ── Perfiles ── */
+.profiles-screen { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; position: relative; }
+.profiles-logo { font-size: 28px; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; margin-bottom: 48px; }
+.profiles-logo span { color: var(--text3); }
+.profiles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; max-width: 320px; margin-bottom: 32px; }
+.profile-item { display: flex; flex-direction: column; align-items: center; gap: 10px; cursor: pointer; }
+.profile-avatar { width: 80px; height: 80px; border-radius: 50%; transition: transform 0.15s; }
+.profile-avatar:hover { transform: scale(1.06); }
+.profile-name { font-size: 13px; font-weight: 500; color: var(--text2); text-align: center; }
+.profile-add { width: 80px; height: 80px; border-radius: 50%; border: 2px dashed var(--surface3); display: flex; align-items: center; justify-content: center; font-size: 28px; color: var(--text3); cursor: pointer; transition: border-color 0.15s; }
+.profile-add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── PIN ── */
+.pin-screen { min-height: 100vh; background: var(--bg); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; }
+.pin-name  { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+.pin-label { font-size: 13px; color: var(--text3); margin-bottom: 32px; }
+.pin-dots  { display: flex; gap: 16px; margin-bottom: 40px; }
+.pin-dot   { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--surface3); transition: background 0.15s, border-color 0.15s; }
+.pin-dot.filled { background: var(--accent); border-color: var(--accent); }
+.pin-dot.error  { background: var(--red);    border-color: var(--red); }
+.pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 280px; }
+.pin-key   { width: 72px; height: 72px; background: var(--surface); border: none; border-radius: 50%; font-family: inherit; font-size: 24px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.1s; display: flex; align-items: center; justify-content: center; }
+.pin-key:hover { background: var(--surface2); }
+.pin-key.del   { font-size: 18px; color: var(--text2); }
+.pin-key.empty { background: none; cursor: default; }
+.pin-back  { margin-top: 24px; background: none; border: none; color: var(--text3); font-family: inherit; font-size: 14px; cursor: pointer; padding: 8px; }
+.pin-error { color: var(--red); font-size: 13px; margin-top: -28px; margin-bottom: 12px; height: 20px; }
+
+/* ── Avatares modal ── */
+.avatar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 8px; }
+.avatar-opt  { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: border-color 0.15s, transform 0.15s; overflow: hidden; }
+.avatar-opt:hover    { transform: scale(1.08); }
+.avatar-opt.selected { border-color: var(--accent); }
+.avatar-label { font-size: 10px; color: var(--text3); text-align: center; margin-top: 3px; }
+
+/* ── Crypto search ── */
+.crypto-results { position: absolute; top: 100%; left: 0; right: 0; z-index: 50; background: var(--surface2); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-top: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+.crypto-result-item { padding: 12px 16px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
+.crypto-result-item:last-child { border-bottom: none; }
+.crypto-result-item:hover { background: var(--surface3); }
