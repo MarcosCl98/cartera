@@ -144,7 +144,7 @@ body {
 .pin-dot   { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--surface3); transition: background 0.15s, border-color 0.15s; }
 .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
 .pin-dot.error  { background: var(--red);    border-color: var(--red); }
-.pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 280px; }
+.pin-keypad { display: grid; grid-template-columns: repeat(3, 72px); gap: 12px; justify-content: center; }
 .pin-key   { width: 72px; height: 72px; background: var(--surface); border: none; border-radius: 50%; font-family: inherit; font-size: 24px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.1s; display: flex; align-items: center; justify-content: center; }
 .pin-key:hover { background: var(--surface2); }
 .pin-key.del   { font-size: 18px; color: var(--text2); }
