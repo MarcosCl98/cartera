@@ -76,15 +76,6 @@ export function PositionModal({ pos, onSave, onClose }) {
         </div>
       </div>
 
-      {needsManual && (
-        <div className="form-row" style={{ marginTop: 16 }}>
-          <label className="form-label">Precio actual manual (€/g)</label>
-          <input className="form-input" type="number" min="0" step="any" placeholder="0.00"
-            value={form.manualPrice} onChange={e => set("manualPrice", e.target.value)} />
-          <div className="hint">Se intentará obtener automáticamente. Rellena como respaldo.</div>
-        </div>
-      )}
-
       <div className="modal-actions">
         <button className="btn-secondary" onClick={onClose}>Cancelar</button>
         <button className="btn-primary" onClick={handleSave}>Guardar</button>
