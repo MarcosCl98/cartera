@@ -218,3 +218,48 @@ export async function fetchChartSeries(positions, range, interval) {
 
   return allSeries.filter(s => s && s.timestamps.length > 1);
 }
+
+// ── Búsqueda de acciones ──────────────────────────────────────────────────────
+export async function searchStocks(query) {
+  const r = await fetch(
+    proxy(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=10&newsCount=0&listsCount=0`)
+  );
+  const d = await r.json();
+
+  return (d?.quotes || [])
+    .filter(item => item.quoteType === "EQUITY" && item.symbol && item.longname)
+    .slice(0, 6)
+    .map(item => ({
+      symbol: item.symbol,
+      name: item.longname || item.shortname || item.symbol,
+      exchange: item.exchDisp || "",
+      // Logo vía Clearbit usando el dominio inferido del ticker
+      logo: `https://logo.clearbit.com/${inferDomain(item.symbol, item.longname)}`,
+    }));
+}
+
+function inferDomain(symbol, name) {
+  // Mapa de tickers conocidos a dominios
+  const known = {
+    "AAPL": "apple.com", "MSFT": "microsoft.com", "GOOGL": "google.com",
+    "GOOG": "google.com", "AMZN": "amazon.com", "META": "meta.com",
+    "TSLA": "tesla.com", "NVDA": "nvidia.com", "NFLX": "netflix.com",
+    "AMD": "amd.com", "INTC": "intel.com", "ORCL": "oracle.com",
+    "CRM": "salesforce.com", "ADBE": "adobe.com", "PYPL": "paypal.com",
+    "SAN.MC": "santander.com", "BBVA.MC": "bbva.com", "ITX.MC": "inditex.com",
+    "TEF.MC": "telefonica.com", "IBE.MC": "iberdrola.com", "REP.MC": "repsol.com",
+    "ASML": "asml.com", "SAP": "sap.com", "NVO": "novonordisk.com",
+    "MC.PA": "lvmh.com", "OR.PA": "loreal.com", "TTE.PA": "totalenergies.com",
+    "BRK-B": "berkshirehathaway.com", "JPM": "jpmorganchase.com",
+    "V": "visa.com", "MA": "mastercard.com", "BAC": "bankofamerica.com",
+    "WMT": "walmart.com", "DIS": "disney.com", "KO": "coca-cola.com",
+  };
+  if (known[symbol]) return known[symbol];
+  // Fallback: usar nombre de empresa para inferir dominio
+  const clean = (name || "").toLowerCase()
+    .replace(/,?\s*(inc|corp|ltd|plc|sa|ag|nv|se|group|holdings?|co)\.?$/i, "")
+    .trim()
+    .replace(/\s+/g, "")
+    .replace(/[^a-z0-9]/g, "");
+  return `${clean}.com`;
+}
