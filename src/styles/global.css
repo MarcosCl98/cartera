@@ -145,9 +145,9 @@ body {
 .pin-dot.filled { background: var(--accent); border-color: var(--accent); }
 .pin-dot.error  { background: var(--red);    border-color: var(--red); }
 .pin-keypad { display: grid; grid-template-columns: repeat(3, 72px); gap: 12px; justify-content: center; }
-.pin-key   { width: 72px; height: 72px; background: var(--surface); border: none; border-radius: 50%; font-family: inherit; font-size: 24px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.1s; display: flex; align-items: center; justify-content: center; }
+.pin-key   { width: 72px; height: 72px; background: var(--surface); border: none; border-radius: 50%; font-family: inherit; font-size: 24px; font-weight: 600; color: var(--text); cursor: pointer; transition: background 0.1s; display: flex; align-items: center; justify-content: center; line-height: 1; padding: 0; text-align: center; }
 .pin-key:hover { background: var(--surface2); }
-.pin-key.del   { font-size: 18px; color: var(--text2); }
+.pin-key.del   { font-size: 22px; color: var(--text2); }
 .pin-key.empty { background: none; cursor: default; }
 .pin-back  { margin-top: 24px; background: none; border: none; color: var(--text3); font-family: inherit; font-size: 14px; cursor: pointer; padding: 8px; }
 .pin-error { color: var(--red); font-size: 13px; margin-top: -28px; margin-bottom: 12px; height: 20px; }
