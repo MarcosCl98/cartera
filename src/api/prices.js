@@ -233,26 +233,8 @@ export async function searchStocks(query) {
       symbol: item.symbol,
       name: item.longname || item.shortname || item.symbol,
       exchange: item.exchDisp || "",
-      // Logo vía Google Favicons (gratuito, sin CORS)
-      logo: `https://www.google.com/s2/favicons?domain=${getStockDomain(item.symbol)}&sz=64`,
+      // Logo vía FMP — funciona con cualquier ticker bursátil
+      logo: `https://financialmodelingprep.com/image-stock/${item.symbol}.png`,
     }));
 }
 
-function getStockDomain(symbol) {
-  const known = {
-    "AAPL": "apple.com", "MSFT": "microsoft.com", "GOOGL": "google.com",
-    "GOOG": "google.com", "AMZN": "amazon.com", "META": "meta.com",
-    "TSLA": "tesla.com", "NVDA": "nvidia.com", "NFLX": "netflix.com",
-    "AMD": "amd.com", "INTC": "intel.com", "ORCL": "oracle.com",
-    "CRM": "salesforce.com", "ADBE": "adobe.com", "PYPL": "paypal.com",
-    "SAN.MC": "santander.com", "BBVA.MC": "bbva.com", "ITX.MC": "inditex.com",
-    "TEF.MC": "telefonica.com", "IBE.MC": "iberdrola.com", "REP.MC": "repsol.com",
-    "ASML": "asml.com", "SAP": "sap.com", "NVO": "novonordisk.com",
-    "MC.PA": "lvmh.com", "OR.PA": "loreal.com", "TTE.PA": "totalenergies.com",
-    "JPM": "jpmorganchase.com", "V": "visa.com", "MA": "mastercard.com",
-    "BAC": "bankofamerica.com", "WMT": "walmart.com", "DIS": "disney.com",
-    "KO": "coca-cola.com", "UBER": "uber.com", "SPOT": "spotify.com",
-    "SHOP": "shopify.com", "COIN": "coinbase.com", "SQ": "block.xyz",
-  };
-  return known[symbol] || "yahoo.com";
-}
