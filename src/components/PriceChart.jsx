@@ -202,8 +202,25 @@ export function PriceChart({
       {/* Hover */}
       {hoverPt && <>
         <line x1={hoverPt.x} y1={PAD.t} x2={hoverPt.x} y2={PAD.t+iH}
-          stroke="var(--text3)" strokeWidth="1" strokeDasharray="4,3"/>
+          stroke="var(--surface3)" strokeWidth="1"/>
         <circle cx={hoverPt.x} cy={hoverPt.y} r="5" fill={lineColor} stroke="var(--bg)" strokeWidth="2.5"/>
+        {/* Tooltip con precio */}
+        {(() => {
+          const hd = data[hoverIdx];
+          if (!hd) return null;
+          const priceText = fmtAxisPrice(hd.v);
+          const dateText = hd.date || hd.label || "";
+          const boxW = Math.max(priceText.length, dateText.length) * 7 + 16;
+          const bx = Math.min(Math.max(hoverPt.x - boxW/2, PAD.l), W - PAD.r - boxW);
+          const by = Math.max(PAD.t, hoverPt.y - 52);
+          return (
+            <g>
+              <rect x={bx} y={by} width={boxW} height={40} rx="6" fill="var(--surface2)" opacity="0.95"/>
+              <text x={bx + boxW/2} y={by + 14} textAnchor="middle" fill="var(--text)" fontSize="12" fontWeight="700" fontFamily="inherit">{priceText}</text>
+              <text x={bx + boxW/2} y={by + 30} textAnchor="middle" fill="var(--text3)" fontSize="10" fontFamily="inherit">{dateText}</text>
+            </g>
+          );
+        })()}
       </>}
 
       {/* Eje X */}
