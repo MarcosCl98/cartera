@@ -156,14 +156,14 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
       {/* Gráfica — sin padding lateral, pegada al contenido */}
       <div>
         {loading ? (
-          <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)" }}>
+          <div style={{ height: 380, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)" }}>
             <span className="price-loading">Cargando...</span>
           </div>
         ) : (
           <PriceChart
             points={history}
             rangeLabel={tab}
-            height={300}
+            height={380}
             showYAxis={true}
             onHover={setHoverPoint}
           />
@@ -181,27 +181,6 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
       </div>
 
       <div style={{ padding: "20px 16px 0", display: "flex", flexDirection: "column", gap: 12 }}>
-
-        {/* Mi posición */}
-        <div style={{ background: "var(--surface)", borderRadius: 16, padding: 16 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>Mi posición</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-            {[
-              { label: "Valor actual", val: <HideAmount hide={hideAmounts}>{fmtEur(currentValue)}</HideAmount> },
-              { label: "Invertido",    val: <HideAmount hide={hideAmounts}>{fmtEur(invested)}</HideAmount> },
-              { label: "Ganancia",     val: <HideAmount hide={hideAmounts}>{gainAbs != null ? `${gainAbs >= 0 ? "+" : ""}${fmtEur(gainAbs)}` : "—"}</HideAmount>, color: isUp ? "var(--accent)" : "var(--red)" },
-              { label: "Rentabilidad", val: fmtPct(gainPct), color: isUp ? "var(--accent)" : "var(--red)" },
-              { label: position.type === "gold" ? "Gramos" : "Participaciones", val: fmt(units, units % 1 === 0 ? 0 : 4) },
-              { label: "Precio medio", val: <HideAmount hide={hideAmounts}>{fmtEur(avgPrice)}</HideAmount> },
-            ].map(({ label, val, color }, i) => (
-              <div key={i}>
-                <div style={{ fontSize: 11, color: "var(--text3)", marginBottom: 4 }}>{label}</div>
-                <div style={{ fontSize: 17, fontWeight: 700, color: color || "var(--text)" }}>{val}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
         {/* Rentabilidades históricas */}
         {detail?.returns && Object.values(detail.returns).some(v => v != null) && (
           <div style={{ background: "var(--surface)", borderRadius: 16, padding: 16 }}>
