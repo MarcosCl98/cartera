@@ -11,9 +11,11 @@ import { HideAmount } from "../components/ui";
 import { DonutChart } from "../components/DonutChart";
 import { LineChart } from "../components/LineChart";
 import { PositionModal } from "../components/PositionModal";
+import { PositionDetailScreen } from "./PositionDetailScreen";
 
 export function PortfolioScreen({ user, onLogout }) {
   const [modal, setModal]             = useState(null); // null | "new" | positionObj
+  const [detailPos, setDetailPos]     = useState(null); // posición seleccionada para detalle
   const [hideAmounts, setHideAmounts] = useState(false);
 
   const {
@@ -32,6 +34,16 @@ export function PortfolioScreen({ user, onLogout }) {
     await addOrUpdatePosition(pos);
     setModal(null);
   };
+
+  // Pantalla de detalle
+  if (detailPos) return (
+    <PositionDetailScreen
+      position={detailPos}
+      priceData={prices[detailPos.id]}
+      hideAmounts={hideAmounts}
+      onBack={() => setDetailPos(null)}
+    />
+  );
 
   return (
     <div className="app">
@@ -135,7 +147,7 @@ export function PortfolioScreen({ user, onLogout }) {
       ) : (
         <div className="positions">
           {enriched.map(p => (
-            <div key={p.id} className="position">
+            <div key={p.id} className="position" onClick={() => setDetailPos(p)} style={{cursor:"pointer"}}>
               <div className="pos-name">{p.name}</div>
               <div className="pos-value">
                 <HideAmount hide={hideAmounts}>{fmtEur(p.currentValue)}</HideAmount>
