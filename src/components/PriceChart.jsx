@@ -126,7 +126,7 @@ export function PriceChart({
   // Dimensiones — reservar espacio para eje Y a la derecha
   const yAxisW = showYAxis ? 48 : 0;
   const W = 800, H = height;
-  const PAD = { t: 8, r: yAxisW, b: 22, l: 4 };
+  const PAD = { t: 6, r: yAxisW, b: 18, l: 4 };
   const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
 
   const toX = (i) => PAD.l + (i / (data.length - 1)) * iW;
@@ -230,7 +230,7 @@ export function PriceChart({
         const anchor = xl.i === 0 ? "start" : xl.i >= data.length - 2 ? "end" : "middle";
         return (
           <text key={i} x={Math.min(x, W - yAxisW - 4)} y={H - 6}
-            textAnchor={anchor} fill="var(--text3)" fontSize="9.5" fontFamily="inherit">
+            textAnchor={anchor} fill="var(--text3)" fontSize="8.5" fontFamily="inherit">
             {xl.text}
           </text>
         );
