@@ -20,18 +20,25 @@ function buildFullRange(snapshots, rangeLabel) {
   else if (rangeLabel === "1A") start.setDate(now.getDate() - 364);
   else if (rangeLabel === "5A") start.setDate(now.getDate() - 364 * 5);
 
-  // Mapa de snapshots por fecha
+  // Mapa de snapshots por fecha — normalizar a dd/mm
   const snapMap = {};
-  snapshots.forEach(s => { snapMap[s.date] = s.total; });
+  snapshots.forEach(s => {
+    const [d, m] = s.date.split("/").map(Number);
+    const key = `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}`;
+    snapMap[key] = s.total;
+  });
 
   const points = [];
   const cur = new Date(start);
 
   while (cur <= now) {
-    const label = cur.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" });
+    // Forzar formato dd/mm consistente sin depender del locale
+    const dd = String(cur.getDate()).padStart(2, "0");
+    const mm = String(cur.getMonth() + 1).padStart(2, "0");
+    const label = `${dd}/${mm}`;
     points.push({
       label,
-      value: snapMap[label] ?? null, // null = sin datos ese día
+      value: snapMap[label] ?? null,
     });
     cur.setDate(cur.getDate() + 1);
   }
@@ -66,7 +73,8 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
     const pts = buildFullRange(snapshots, activeTab);
 
     // Reemplazar el último punto con el valor actual real
-    const today = new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" });
+    const now2 = new Date();
+    const today = `${String(now2.getDate()).padStart(2,"0")}/${String(now2.getMonth()+1).padStart(2,"0")}`;
     if (currentTotal && pts.length > 0) {
       const lastIdx = pts.length - 1;
       pts[lastIdx] = { ...pts[lastIdx], value: currentTotal, label: today };
