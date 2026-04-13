@@ -10,7 +10,13 @@ export function DonutChart({ items, hideAmounts }) {
   const total = items.reduce((s, i) => s + (i.value || 0), 0);
   if (!total) return null;
 
-  const R = 70, cx = 90, cy = 90, stroke = 22;
+  // Layout vertical si hay más de 4 items
+  const isVertical = items.length > 4;
+
+  const R = isVertical ? 80 : 70;
+  const size = isVertical ? 200 : 180;
+  const cx = size / 2, cy = size / 2;
+  const stroke = isVertical ? 26 : 22;
   const circ = 2 * Math.PI * R;
   let offset = 0;
 
@@ -25,8 +31,14 @@ export function DonutChart({ items, hideAmounts }) {
   return (
     <div className="donut-wrap">
       <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>Distribución</div>
-      <div className="donut-inner">
-        <svg width="180" height="180" viewBox="0 0 180 180">
+      <div style={{
+        display: "flex",
+        flexDirection: isVertical ? "column" : "row",
+        alignItems: isVertical ? "center" : "center",
+        gap: isVertical ? 16 : 20,
+      }}>
+        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+          style={{ flexShrink: 0 }}>
           <circle cx={cx} cy={cy} r={R} fill="none" stroke="#1e242d" strokeWidth={stroke} />
           {arcs.map((a, i) => (
             <circle
@@ -37,13 +49,19 @@ export function DonutChart({ items, hideAmounts }) {
               style={{ transform: "rotate(-90deg)", transformOrigin: `${cx}px ${cy}px` }}
             />
           ))}
-          <text x={cx} y={cy + 12} textAnchor="middle" fill="#c8a96e"
-            fontSize="13" fontFamily="inherit" fontWeight="500">
+          <text x={cx} y={cy + 6} textAnchor="middle" fill="#c8a96e"
+            fontSize={isVertical ? 15 : 13} fontFamily="inherit" fontWeight="500">
             {hideAmounts ? "···" : `${fmt(total / 1000, 1)}k€`}
           </text>
         </svg>
 
-        <div className="donut-legend">
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: isVertical ? 8 : 10,
+          width: isVertical ? "100%" : "auto",
+          flex: isVertical ? "none" : 1,
+        }}>
           {arcs.map((a, i) => (
             <div key={i} className="legend-item">
               <div className="legend-dot" style={{ background: a.color }} />
