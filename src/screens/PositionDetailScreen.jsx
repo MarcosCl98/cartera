@@ -76,6 +76,7 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
   const [symbol, setSymbol] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hoverIdx, setHoverIdx] = useState(null);
+  const [hoverPoint, setHoverPoint] = useState(null);
   const svgRef = useRef(null);
 
   useEffect(() => {
@@ -112,7 +113,7 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
   const isUp = (gainPct || 0) >= 0;
 
   // Gráfica interactiva
-  const hoverPoint = hoverIdx != null && history.length > 0 ? history[Math.min(hoverIdx, history.length - 1)] : null;
+  // hoverPoint ahora es estado directo (setHoverPoint)
   const displayPrice = hoverPoint ? hoverPoint.close : currentPrice;
   const basePrice = history[0]?.close;
   const priceChange = displayPrice && basePrice ? displayPrice - basePrice : null;
@@ -169,13 +170,17 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
         <div style={{ fontSize: 36, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.03em" }}>
           <HideAmount hide={hideAmounts} size="lg">{fmtEur(displayPrice)}</HideAmount>
         </div>
-        {priceChangePct != null && (
+        {/* Fecha del punto hover o cambio total */}
+        {hoverPoint ? (
+          <div style={{ fontSize: 13, color: "var(--text3)", marginTop: 6 }}>
+            {hoverPoint.date}
+          </div>
+        ) : priceChangePct != null ? (
           <div style={{ fontSize: 14, fontWeight: 600, color: chartUp ? "var(--accent)" : "var(--red)", marginTop: 6, display: "flex", gap: 6, alignItems: "center" }}>
             <span>{chartUp ? "↑" : "↓"} {chartUp ? "+" : ""}{fmtEur(priceChange)}</span>
             <span style={{ opacity: 0.7 }}>({chartUp ? "+" : ""}{fmt(priceChangePct)}%)</span>
-            {hoverPoint && <span style={{ color: "var(--text3)", fontWeight: 400 }}>{hoverPoint.date}</span>}
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* Gráfica */}
@@ -188,9 +193,9 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
           <PriceChart
             points={history}
             rangeLabel={tab}
-            height={180}
+            height={240}
             showYAxis={true}
-            onHover={p => setHoverIdx(p ? history.indexOf(p) : null)}
+            onHover={p => { setHoverIdx(p ? history.indexOf(p) : null); setHoverPoint(p || null); }}
           />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, background: "var(--surface2)", borderRadius: 10, padding: 3 }}>
             {RANGES.map(r => (
