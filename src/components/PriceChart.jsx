@@ -126,7 +126,7 @@ export function PriceChart({
   // Dimensiones — reservar espacio para eje Y a la derecha
   const yAxisW = showYAxis ? 48 : 0;
   const W = 800, H = height;
-  const PAD = { t: 12, r: yAxisW, b: 28, l: 8 };
+  const PAD = { t: 8, r: yAxisW, b: 22, l: 4 };
   const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
 
   const toX = (i) => PAD.l + (i / (data.length - 1)) * iW;
