@@ -5,16 +5,15 @@
 
 import { useState, useEffect, useRef } from "react";
 import { resolveSymbol, fetchAssetDetail, fetchPriceHistory } from "../api/detail";
+import { PriceChart } from "../components/PriceChart";
 import { fmtEur, fmtPct, fmt } from "../utils/format";
 import { HideAmount } from "../components/ui";
 
 const RANGES = [
-  { label: "1S", range: "5d",  interval: "1d" },
-  { label: "1M", range: "1mo", interval: "1d" },
-  { label: "3M", range: "3mo", interval: "1d" },
-  { label: "6M", range: "6mo", interval: "1d" },
-  { label: "1A", range: "1y",  interval: "1d" },
-  { label: "5A", range: "5y",  interval: "1wk" },
+  { label: "1S",  range: "5d",  interval: "1d"  },
+  { label: "1M",  range: "1mo", interval: "1d"  },
+  { label: "1A",  range: "1y",  interval: "1d"  },
+  { label: "MAX", range: "max", interval: "1wk" },
 ];
 
 function MiniChart({ history, color }) {
@@ -184,31 +183,15 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
         <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)" }}>
           <span className="price-loading">Cargando...</span>
         </div>
-      ) : history.length >= 2 ? (
+      ) : (
         <div style={{ padding: "0 16px" }}>
-          <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
-            style={{ width: "100%", height: 180, overflow: "visible", touchAction: "none", cursor: "crosshair" }}
-            onMouseMove={handleMove} onTouchMove={handleMove}
-            onMouseLeave={() => setHoverIdx(null)} onTouchEnd={() => setHoverIdx(null)}>
-            <defs>
-              <linearGradient id="ddg" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={chartUp ? "#22c55e" : "#ef4444"} stopOpacity="0.2"/>
-                <stop offset="100%" stopColor={chartUp ? "#22c55e" : "#ef4444"} stopOpacity="0"/>
-              </linearGradient>
-            </defs>
-            <path d={fillD} fill="url(#ddg)"/>
-            <path d={pathD} fill="none" stroke={lineColor} strokeWidth="2" strokeLinejoin="round"/>
-            {hoverPt && <>
-              <line x1={hoverPt.x} y1={PAD.t} x2={hoverPt.x} y2={PAD.t+iH} stroke="var(--text3)" strokeWidth="1" strokeDasharray="4,3"/>
-              <circle cx={hoverPt.x} cy={hoverPt.y} r="5" fill={lineColor} stroke="var(--bg)" strokeWidth="2"/>
-            </>}
-            {history.length > 1 && hoverIdx == null && <>
-              <text x={PAD.l} y={H-4} textAnchor="start" fill="var(--text3)" fontSize="10" fontFamily="inherit">{history[0].date}</text>
-              <text x={W-PAD.r} y={H-4} textAnchor="end" fill="var(--text3)" fontSize="10" fontFamily="inherit">{history[history.length-1].date}</text>
-            </>}
-          </svg>
-
-          {/* Tabs */}
+          <PriceChart
+            points={history}
+            rangeLabel={tab}
+            height={180}
+            showYAxis={true}
+            onHover={p => setHoverIdx(p ? history.indexOf(p) : null)}
+          />
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, background: "var(--surface2)", borderRadius: 10, padding: 3 }}>
             {RANGES.map(r => (
               <button key={r.label} onClick={() => { setTab(r.label); setHoverIdx(null); }}
@@ -218,7 +201,7 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
             ))}
           </div>
         </div>
-      ) : null}
+      )}
 
       <div style={{ padding: "24px 16px", display: "flex", flexDirection: "column", gap: 16 }}>
 
