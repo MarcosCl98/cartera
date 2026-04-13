@@ -107,7 +107,7 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
           <div style={{ fontSize: 14, fontWeight: 600, color: isUp ? "var(--accent)" : "var(--red)", marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
             <HideAmount hide={hideAmounts}>{isUp ? "↑" : "↓"} {isUp ? "+" : ""}{fmtEur(change)}</HideAmount>
             <span style={{ opacity: 0.7 }}>({isUp ? "+" : ""}{fmt(changePct)}%)</span>
-            {hoverPoint && <span style={{ color: "var(--text3)", fontWeight: 400 }}>{hoverPoint.label || hoverPoint.date}</span>}
+            {hoverPoint && <span style={{ color: "var(--text3)", fontWeight: 400, fontSize: 12 }}>{hoverPoint.label || hoverPoint.date}</span>}
           </div>
         )}
       </div>
@@ -122,7 +122,7 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
         <PriceChart
           points={points}
           rangeLabel={tab}
-          height={200}
+          height={240}
           showYAxis={true}
           onHover={setHoverPoint}
         />
