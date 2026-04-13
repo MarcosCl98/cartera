@@ -169,7 +169,7 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
 
       <div style={{ padding: "20px 16px 0", display: "flex", flexDirection: "column", gap: 12 }}>
 	  
-	  /* Mi posición */}
+	 {/* Mi posición */}
         <div style={{ background: "var(--surface)", borderRadius: 16, padding: 16 }}>
           <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text3)", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.06em" }}>Mi posición</div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
