@@ -120,7 +120,7 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
       </div>
 
       {/* Precio + cambio + rentabilidad posición */}
-      <div style={{ padding: "4px 20px 16px" }}>
+      <div style={{ padding: "4px 20px 10px" }}>
         {/* Precio */}
         <div style={{ fontSize: 38, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.03em", lineHeight: 1 }}>
           <HideAmount hide={hideAmounts} size="lg">{fmtEur(displayPrice)}</HideAmount>
@@ -153,29 +153,27 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
         ) : null}
       </div>
 
-      {/* Gráfica — ocupa todo el ancho sin padding lateral */}
-      <div style={{ padding: "0 0 4px" }}>
+      {/* Gráfica — sin padding lateral, pegada al contenido */}
+      <div>
         {loading ? (
-          <div style={{ height: 280, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)" }}>
+          <div style={{ height: 300, display: "flex", alignItems: "center", justifyContent: "center", color: "var(--text3)" }}>
             <span className="price-loading">Cargando...</span>
           </div>
         ) : (
-          <div style={{ padding: "0 12px" }}>
-            <PriceChart
-              points={history}
-              rangeLabel={tab}
-              height={280}
-              showYAxis={true}
-              onHover={setHoverPoint}
-            />
-          </div>
+          <PriceChart
+            points={history}
+            rangeLabel={tab}
+            height={300}
+            showYAxis={true}
+            onHover={setHoverPoint}
+          />
         )}
 
-        {/* Tabs */}
-        <div style={{ margin: "10px 16px 0", display: "flex", justifyContent: "space-between", background: "var(--surface2)", borderRadius: 10, padding: 3 }}>
+        {/* Tabs pegados a la gráfica */}
+        <div style={{ margin: "8px 16px 0", display: "flex", background: "var(--surface2)", borderRadius: 10, padding: 3 }}>
           {RANGES.map(r => (
             <button key={r.label} onClick={() => setTab(r.label)}
-              style={{ flex: 1, background: tab === r.label ? "var(--surface3)" : "none", border: "none", color: tab === r.label ? "var(--text)" : "var(--text3)", fontFamily: "inherit", fontSize: 13, fontWeight: tab === r.label ? 700 : 500, padding: "6px 0", borderRadius: 8, cursor: "pointer", transition: "all 0.15s" }}>
+              style={{ flex: 1, background: tab === r.label ? "var(--surface3)" : "none", border: "none", color: tab === r.label ? "var(--text)" : "var(--text3)", fontFamily: "inherit", fontSize: 13, fontWeight: tab === r.label ? 700 : 500, padding: "7px 0", borderRadius: 8, cursor: "pointer", transition: "all 0.15s" }}>
               {r.label}
             </button>
           ))}
