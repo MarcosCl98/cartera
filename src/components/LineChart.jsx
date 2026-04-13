@@ -115,8 +115,12 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
 
   // Calcular min/max solo de puntos con valor
   const valuesWithData = allPoints.filter(p => p.value !== null).map(p => p.value);
-  const minV = valuesWithData.length ? Math.min(...valuesWithData) : 0;
-  const maxV = valuesWithData.length ? Math.max(...valuesWithData) : 1;
+  const rawMin = valuesWithData.length ? Math.min(...valuesWithData) : 0;
+  const rawMax = valuesWithData.length ? Math.max(...valuesWithData) : 1;
+  // Añadir margen del 10% arriba y abajo para que la variación se vea bien
+  const margin = (rawMax - rawMin) * 0.1 || rawMax * 0.02;
+  const minV = rawMin - margin;
+  const maxV = rawMax + margin;
   const range = maxV - minV || 1;
 
   const toX = (i) => PAD.l + (i / (n - 1)) * iW;
