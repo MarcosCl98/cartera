@@ -140,7 +140,7 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
         </div>
 
         
-
+      <div>
       {/* Gráfica — sin padding lateral, pegada al contenido */}
       <div>
         {loading ? (
