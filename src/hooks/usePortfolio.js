@@ -37,11 +37,12 @@ export function usePortfolio(userId) {
   const [lastUpdate, setLastUpdate] = useState(null);
   const fetchingRef = useRef(false);
 
-  // ── Carga inicial al entrar al perfil ───────────────────────────────────────
+  // ── Carga inicial + autoactualización cada 5 minutos ────────────────────────
   useEffect(() => {
     if (!userId) return;
-    setSyncing(true);
-    (async () => {
+
+    const load = async (isFirst = false) => {
+      if (isFirst) setSyncing(true);
       try {
         const [remotePos, remoteSnaps] = await Promise.all([
           sb.getPositions(userId),
@@ -56,13 +57,20 @@ export function usePortfolio(userId) {
         }
       } catch (e) {
         console.warn("Error cargando datos:", e);
-        // Caer a caché local si Supabase falla
-        setPositions(loadCache(STORAGE_KEY));
-        setSnapshots(loadCache(SNAP_KEY));
+        if (isFirst) {
+          setPositions(loadCache(STORAGE_KEY));
+          setSnapshots(loadCache(SNAP_KEY));
+        }
       } finally {
-        setSyncing(false);
+        if (isFirst) setSyncing(false);
       }
-    })();
+    };
+
+    load(true);
+
+    // Autoactualizar precios cada 5 minutos
+    const interval = setInterval(() => load(false), 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, [userId]);
 
   // Persiste caché local cuando cambian las posiciones
