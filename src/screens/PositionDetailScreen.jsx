@@ -138,19 +138,6 @@ export function PositionDetailScreen({ position, priceData, hideAmounts, onBack 
             <span style={{ fontSize: 13, color: "var(--text3)" }}>{hoverPoint.date}</span>
           ) : null}
         </div>
-
-        {/* Rentabilidad de MI posición en ese punto */}
-        {hoverPoint && hoverGainAbs != null ? (
-          <div style={{ marginTop: 6, display: "flex", gap: 12, alignItems: "center" }}>
-            <span style={{ fontSize: 12, color: "var(--text3)" }}>Mi posición:</span>
-            <span style={{ fontSize: 13, fontWeight: 600, color: (hoverGainPct||0) >= 0 ? "var(--accent)" : "var(--red)" }}>
-              <HideAmount hide={hideAmounts}>
-                {(hoverGainPct||0) >= 0 ? "+" : ""}{fmtEur(hoverGainAbs)}
-              </HideAmount>
-              {" "}({fmtPct(hoverGainPct)})
-            </span>
-          </div>
-        ) : null}
       </div>
 
       {/* Gráfica — sin padding lateral, pegada al contenido */}
