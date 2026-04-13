@@ -111,7 +111,7 @@ export function PortfolioScreen({ user, onLogout }) {
       </div>
 
       {/* Gráfica */}
-      <LineChart positions={positions} prices={prices} hideAmounts={hideAmounts} />
+      <LineChart snapshots={snapshots} positions={positions} prices={prices} hideAmounts={hideAmounts} />
 
       {/* Donut */}
       {donutItems.length > 0 && <DonutChart items={donutItems} hideAmounts={hideAmounts} />}
