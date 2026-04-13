@@ -127,16 +127,17 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
   const valuesWithData = allPoints.filter(p => p.value !== null).map(p => p.value);
   if (valuesWithData.length === 0) return;
 
-  // Usar percentil 5-95 para ignorar outliers extremos y ampliar la escala
-  const sorted = [...valuesWithData].sort((a, b) => a - b);
-  const p05idx = Math.floor(sorted.length * 0.05);
-  const p95idx = Math.ceil(sorted.length * 0.95) - 1;
-  const p05 = sorted[Math.max(0, p05idx)];
-  const p95 = sorted[Math.min(sorted.length - 1, p95idx)];
-  const diff = p95 - p05;
-  const margin = diff > 0 ? diff * 0.2 : p95 * 0.01;
-  const minV = p05 - margin;
-  const maxV = p95 + margin;
+  // Usar solo puntos con snapshot real (no interpolados) para la escala
+  const realValues = allPoints.filter(p => p.value !== null && !p.interpolated).map(p => p.value);
+  const scaleValues = realValues.length >= 2 ? realValues : valuesWithData;
+
+  const rawMin = Math.min(...scaleValues);
+  const rawMax = Math.max(...scaleValues);
+  const diff = rawMax - rawMin;
+  // Margen generoso para que la variación ocupe la mayor parte de la altura
+  const margin = diff > 0 ? diff * 0.5 : rawMax * 0.005;
+  const minV = rawMin - margin;
+  const maxV = rawMax + margin;
   const range = maxV - minV || 1;
 
   const toX = (i) => PAD.l + (i / (n - 1)) * iW;
