@@ -1,42 +1,42 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // components/LineChart.jsx
-// Gráfica con días vacíos al inicio y snapshots reales de la cartera.
+// Gráfica de cartera total usando snapshots reales + PriceChart
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo } from "react";
 import { CHART_RANGES } from "../constants";
 import { fmt, fmtEur } from "../utils/format";
 import { HideAmount } from "./ui";
+import { PriceChart } from "./PriceChart";
 
-// Genera todos los días del rango con valor null si no hay snapshot
-function buildFullRange(snapshotsRaw, rangeLabel) {
+// Normaliza fecha "d/m" o "dd/mm" → "dd/mm"
+function normalizeDate(dateStr) {
+  const [d, m] = dateStr.split("/").map(Number);
+  return `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}`;
+}
+
+// Construye puntos del rango con forward-fill para días sin datos
+function buildPoints(snapshots, rangeLabel) {
+  if (!snapshots || snapshots.length === 0) return [];
+
   const now = new Date();
   const start = new Date();
-
-  // Ordenar snapshots cronológicamente (Supabase los devuelve en orden alfabético)
-  const snapshots = [...snapshotsRaw].sort((a, b) => {
-    const [da, ma] = a.date.split("/").map(Number);
-    const [db, mb] = b.date.split("/").map(Number);
-    const yearA = ma > now.getMonth() + 1 ? now.getFullYear() - 1 : now.getFullYear();
-    const yearB = mb > now.getMonth() + 1 ? now.getFullYear() - 1 : now.getFullYear();
-    return new Date(yearA, ma-1, da) - new Date(yearB, mb-1, db);
-  });
-
-  if (rangeLabel === "1S") start.setDate(now.getDate() - 6);
+  if (rangeLabel === "1S")  start.setDate(now.getDate() - 6);
   else if (rangeLabel === "1M") start.setDate(now.getDate() - 29);
-  else if (rangeLabel === "3M") start.setDate(now.getDate() - 89);
-  else if (rangeLabel === "6M") start.setDate(now.getDate() - 179);
   else if (rangeLabel === "1A") start.setDate(now.getDate() - 364);
-  else if (rangeLabel === "5A") start.setDate(now.getDate() - 364 * 5);
+  else {
+    // MAX: desde el primer snapshot
+    const sorted = [...snapshots].sort((a, b) => {
+      const [da, ma] = a.date.split("/").map(Number);
+      const [db, mb] = b.date.split("/").map(Number);
+      return new Date(2024, ma-1, da) - new Date(2024, mb-1, db);
+    });
+    start.setFullYear(2000); // todo el historial
+  }
 
-  // Normalizar y ordenar snapshots por fecha real
+  // Mapa normalizado
   const snapMap = {};
-  const now2 = new Date();
-  snapshots.forEach(s => {
-    const [d, m] = s.date.split("/").map(Number);
-    const key = `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}`;
-    snapMap[key] = s.total;
-  });
+  snapshots.forEach(s => { snapMap[normalizeDate(s.date)] = s.total; });
 
   const points = [];
   const cur = new Date(start);
@@ -45,27 +45,25 @@ function buildFullRange(snapshotsRaw, rangeLabel) {
     const dd = String(cur.getDate()).padStart(2, "0");
     const mm = String(cur.getMonth() + 1).padStart(2, "0");
     const label = `${dd}/${mm}`;
-    points.push({ label, value: snapMap[label] ?? null });
+    // ts aproximado para que PriceChart pueda generar etiquetas de eje X
+    const ts = Math.floor(cur.getTime() / 1000);
+    points.push({ label, ts, value: snapMap[label] ?? null });
     cur.setDate(cur.getDate() + 1);
   }
 
-  // Rellenar huecos con el último valor conocido (forward fill)
-  let lastKnown = null;
+  // Forward-fill huecos
+  let last = null;
   for (let i = 0; i < points.length; i++) {
-    if (points[i].value !== null) {
-      lastKnown = points[i].value;
-    } else if (lastKnown !== null) {
-      points[i] = { ...points[i], value: lastKnown, interpolated: true };
-    }
+    if (points[i].value !== null) last = points[i].value;
+    else if (last !== null) points[i] = { ...points[i], value: last, interpolated: true };
   }
 
-  return points;
+  return points.filter(p => p.value !== null);
 }
 
 export function LineChart({ snapshots, prices, positions, hideAmounts }) {
   const [tab, setTab] = useState("1M");
-  const [hoverIdx, setHoverIdx] = useState(null);
-  const svgRef = useRef(null);
+  const [hoverPoint, setHoverPoint] = useState(null);
 
   const currentTotal = useMemo(() => {
     if (!positions || !prices) return null;
@@ -76,108 +74,32 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
     return total > 0 ? total : null;
   }, [positions, prices]);
 
-  // Solo mostrar tabs donde hay al menos 1 snapshot
-  const availableTabs = useMemo(() => {
-    if (!snapshots || snapshots.length === 0) return [];
-    return CHART_RANGES;
-  }, [snapshots]);
+  const points = useMemo(() => {
+    let pts = buildPoints(snapshots, tab);
+    if (!pts.length) return [];
 
-  const activeTab = tab;
-
-  const allPoints = useMemo(() => {
-    if (!snapshots || snapshots.length === 0) return [];
-    const pts = buildFullRange(snapshots, activeTab);
-
-    // Reemplazar el último punto con el valor actual real
-    const now2 = new Date();
-    const today = `${String(now2.getDate()).padStart(2,"0")}/${String(now2.getMonth()+1).padStart(2,"0")}`;
+    // Reemplazar último punto con precio actual real
     if (currentTotal && pts.length > 0) {
-      const lastIdx = pts.length - 1;
-      pts[lastIdx] = { ...pts[lastIdx], value: currentTotal, label: today };
+      const now = new Date();
+      const dd = String(now.getDate()).padStart(2,"0");
+      const mm = String(now.getMonth()+1).padStart(2,"0");
+      pts = [...pts.slice(0,-1), { ...pts[pts.length-1], value: currentTotal, label: `${dd}/${mm}` }];
     }
     return pts;
-  }, [snapshots, activeTab, currentTotal]);
+  }, [snapshots, tab, currentTotal]);
 
-  // Para la línea SVG, solo usar puntos con valor real
-  // Pero mantenemos el eje X completo con días vacíos
-  const hasData = allPoints.some(p => p.value !== null);
-
-  // Punto hover
-  const hoverPoint = hoverIdx != null ? allPoints[Math.min(hoverIdx, allPoints.length - 1)] : null;
-
-  // Valor mostrado: hover o último punto con valor
-  const lastWithValue = [...allPoints].reverse().find(p => p.value !== null);
-  const displayValue = (hoverPoint?.value != null ? hoverPoint.value : lastWithValue?.value) ?? null;
-
-  // Base: primer punto con valor
-  const firstWithValue = allPoints.find(p => p.value !== null);
-  const baseValue = firstWithValue?.value ?? null;
-
-  const change    = displayValue && baseValue ? displayValue - baseValue : null;
+  const displayValue = hoverPoint ? (hoverPoint.value ?? hoverPoint.v) : (points[points.length-1]?.value ?? currentTotal);
+  const baseValue = points[0]?.value;
+  const change = displayValue && baseValue ? displayValue - baseValue : null;
   const changePct = change && baseValue ? (change / baseValue) * 100 : null;
-  const isUp      = change == null ? true : change >= 0;
-  const lineColor = isUp ? "var(--accent)" : "var(--red)";
+  const isUp = change == null ? true : change >= 0;
 
-  // SVG
-  const W = 800, H = 200, PAD = { t: 20, r: 16, b: 32, l: 8 };
-  const iW = W - PAD.l - PAD.r, iH = H - PAD.t - PAD.b;
-  const n = allPoints.length || 1;
-
-  // Calcular min/max solo de puntos con valor
-  const valuesWithData = allPoints.filter(p => p.value !== null).map(p => p.value);
-  if (valuesWithData.length === 0) return;
-
-  // Usar solo puntos con snapshot real (no interpolados) para la escala
-  const realValues = allPoints.filter(p => p.value !== null && !p.interpolated).map(p => p.value);
-  const scaleValues = realValues.length >= 2 ? realValues : valuesWithData;
-
-  const rawMin = Math.min(...scaleValues);
-  const rawMax = Math.max(...scaleValues);
-  const diff = rawMax - rawMin;
-  // Margen generoso para que la variación ocupe la mayor parte de la altura
-  const margin = diff > 0 ? diff * 0.5 : rawMax * 0.005;
-  const minV = rawMin - margin;
-  const maxV = rawMax + margin;
-  const range = maxV - minV || 1;
-
-  const toX = (i) => PAD.l + (i / (n - 1)) * iW;
-  const toY = (v) => PAD.t + iH - ((v - minV) / range) * iH;
-
-  // Path continuo — ya no hay huecos gracias al forward fill
-  let pathD = "", fillD = "";
-  const ptsWithValue = allPoints.filter(p => p.value !== null);
-
-  if (ptsWithValue.length >= 2) {
-    const pts = allPoints.map((p, i) => ({
-      x: toX(i),
-      y: p.value !== null ? toY(p.value) : null,
-    }));
-    // Solo conectar puntos con valor
-    const validPts = pts.filter(p => p.y !== null);
-    pathD = validPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-    const fp = validPts[0], lp = validPts[validPts.length - 1];
-    fillD = `${pathD} L${lp.x.toFixed(1)},${PAD.t+iH} L${fp.x.toFixed(1)},${PAD.t+iH} Z`;
-  }
-
-  // Punto hover en SVG
-  let hoverSvgPt = null;
-  if (hoverIdx != null && allPoints[hoverIdx]?.value != null) {
-    hoverSvgPt = { x: toX(hoverIdx), y: toY(allPoints[hoverIdx].value) };
-  }
-
-  const handleMove = (e) => {
-    if (!allPoints.length || !svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const x = ((clientX - rect.left) / rect.width) * W;
-    const idx = Math.round(((x - PAD.l) / iW) * (allPoints.length - 1));
-    setHoverIdx(Math.max(0, Math.min(allPoints.length - 1, idx)));
-  };
+  const hasData = points.length >= 2;
 
   return (
     <div className="chart-wrap" style={{ marginBottom: 24 }}>
       {/* Valor y cambio */}
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 12 }}>
         <div style={{ fontSize: 32, fontWeight: 800, color: "var(--text)", letterSpacing: "-0.03em", lineHeight: 1 }}>
           <HideAmount hide={hideAmounts} size="lg">{fmtEur(displayValue)}</HideAmount>
         </div>
@@ -185,7 +107,7 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
           <div style={{ fontSize: 14, fontWeight: 600, color: isUp ? "var(--accent)" : "var(--red)", marginTop: 6, display: "flex", alignItems: "center", gap: 6 }}>
             <HideAmount hide={hideAmounts}>{isUp ? "↑" : "↓"} {isUp ? "+" : ""}{fmtEur(change)}</HideAmount>
             <span style={{ opacity: 0.7 }}>({isUp ? "+" : ""}{fmt(changePct)}%)</span>
-            {hoverPoint && <span style={{ color: "var(--text3)", fontWeight: 400 }}>{hoverPoint.label}</span>}
+            {hoverPoint && <span style={{ color: "var(--text3)", fontWeight: 400 }}>{hoverPoint.label || hoverPoint.date}</span>}
           </div>
         )}
       </div>
@@ -194,51 +116,27 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
       {!hasData ? (
         <div style={{ height: 200, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", color: "var(--text3)", fontSize: 13, gap: 8 }}>
           <span>Sin datos todavía</span>
-          <span style={{ fontSize: 11 }}>Los precios se actualizan automáticamente</span>
+          <span style={{ fontSize: 11 }}>Los precios se actualizan automáticamente cada 5 min</span>
         </div>
       ) : (
-        <svg ref={svgRef} viewBox={`0 0 ${W} ${H}`}
-          style={{ width: "100%", height: 200, overflow: "visible", touchAction: "none", cursor: "crosshair" }}
-          onMouseMove={handleMove} onTouchMove={handleMove}
-          onMouseLeave={() => setHoverIdx(null)} onTouchEnd={() => setHoverIdx(null)}>
-          <defs>
-            <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={isUp ? "#22c55e" : "#ef4444"} stopOpacity="0.18"/>
-              <stop offset="100%" stopColor={isUp ? "#22c55e" : "#ef4444"} stopOpacity="0"/>
-            </linearGradient>
-          </defs>
-
-          <path d={fillD} fill="url(#cg)"/>
-          <path d={pathD} fill="none" stroke={lineColor} strokeWidth="2" strokeLinejoin="round"/>
-
-          {hoverSvgPt && <>
-            <line x1={hoverSvgPt.x} y1={PAD.t} x2={hoverSvgPt.x} y2={PAD.t+iH}
-              stroke="var(--text3)" strokeWidth="1" strokeDasharray="4,3"/>
-            <circle cx={hoverSvgPt.x} cy={hoverSvgPt.y} r="5" fill={lineColor} stroke="var(--bg)" strokeWidth="2"/>
-          </>}
-
-          {hoverIdx == null && allPoints.length > 1 && <>
-            <text x={PAD.l} y={H-4} textAnchor="start" fill="var(--text3)" fontSize="10" fontFamily="inherit">
-              {allPoints[0].label}
-            </text>
-            <text x={W-PAD.r} y={H-4} textAnchor="end" fill="var(--text3)" fontSize="10" fontFamily="inherit">
-              {allPoints[allPoints.length-1].label}
-            </text>
-          </>}
-        </svg>
+        <PriceChart
+          points={points}
+          rangeLabel={tab}
+          height={200}
+          showYAxis={true}
+          onHover={setHoverPoint}
+        />
       )}
 
       {/* Tabs */}
-      {availableTabs.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16, background: "var(--surface2)", borderRadius: 10, padding: 3 }}>
-          {availableTabs.map(r => (
-            <button key={r.label} onClick={() => { setTab(r.label); setHoverIdx(null); }}
-              style={{ flex: 1, background: activeTab === r.label ? "var(--surface3)" : "none", border: "none", color: activeTab === r.label ? "var(--text)" : "var(--text3)", fontFamily: "inherit", fontSize: 12, fontWeight: activeTab === r.label ? 700 : 500, padding: "5px 0", borderRadius: 8, cursor: "pointer", transition: "all 0.15s" }}>
-              {r.label}
-            </button>
-          ))}
-        </div>
-      )}
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 12, background: "var(--surface2)", borderRadius: 10, padding: 3 }}>
+        {CHART_RANGES.map(r => (
+          <button key={r.label} onClick={() => { setTab(r.label); setHoverPoint(null); }}
+            style={{ flex: 1, background: tab === r.label ? "var(--surface3)" : "none", border: "none", color: tab === r.label ? "var(--text)" : "var(--text3)", fontFamily: "inherit", fontSize: 12, fontWeight: tab === r.label ? 700 : 500, padding: "5px 0", borderRadius: 8, cursor: "pointer", transition: "all 0.15s" }}>
+            {r.label}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }
