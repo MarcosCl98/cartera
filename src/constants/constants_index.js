@@ -40,12 +40,10 @@ export const PALETTE = [
 ];
 
 export const CHART_RANGES = [
-  { label: "1S", range: "1mo", interval: "1d" },
-  { label: "1M", range: "1mo", interval: "1d" },
-  { label: "3M", range: "3mo", interval: "1d" },
-  { label: "6M", range: "6mo", interval: "1d" },
-  { label: "1A", range: "1y",  interval: "1d" },
-  { label: "5A", range: "5y",  interval: "1wk" },
+  { label: "1S",  range: "5d",  interval: "1d"  },
+  { label: "1M",  range: "1mo", interval: "1d"  },
+  { label: "1A",  range: "1y",  interval: "1d"  },
+  { label: "MAX", range: "max", interval: "1wk" },
 ];
 
 export const AVATARS = [
