@@ -32,15 +32,21 @@ function buildFullRange(snapshots, rangeLabel) {
   const cur = new Date(start);
 
   while (cur <= now) {
-    // Forzar formato dd/mm consistente sin depender del locale
     const dd = String(cur.getDate()).padStart(2, "0");
     const mm = String(cur.getMonth() + 1).padStart(2, "0");
     const label = `${dd}/${mm}`;
-    points.push({
-      label,
-      value: snapMap[label] ?? null,
-    });
+    points.push({ label, value: snapMap[label] ?? null });
     cur.setDate(cur.getDate() + 1);
+  }
+
+  // Rellenar huecos con el último valor conocido (forward fill)
+  let lastKnown = null;
+  for (let i = 0; i < points.length; i++) {
+    if (points[i].value !== null) {
+      lastKnown = points[i].value;
+    } else if (lastKnown !== null) {
+      points[i] = { ...points[i], value: lastKnown, interpolated: true };
+    }
   }
 
   return points;
@@ -116,32 +122,20 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
   const toX = (i) => PAD.l + (i / (n - 1)) * iW;
   const toY = (v) => PAD.t + iH - ((v - minV) / range) * iH;
 
-  // Construir segmentos de línea (solo donde hay datos consecutivos)
+  // Path continuo — ya no hay huecos gracias al forward fill
   let pathD = "", fillD = "";
-  const segments = [];
-  let currentSeg = [];
+  const ptsWithValue = allPoints.filter(p => p.value !== null);
 
-  allPoints.forEach((p, i) => {
-    if (p.value !== null) {
-      currentSeg.push({ x: toX(i), y: toY(p.value), i });
-    } else {
-      if (currentSeg.length > 0) { segments.push(currentSeg); currentSeg = []; }
-    }
-  });
-  if (currentSeg.length > 0) segments.push(currentSeg);
-
-  if (segments.length > 0) {
-    pathD = segments.map(seg =>
-      seg.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")
-    ).join(" ");
-
-    // Fill solo del primer al último punto con valor
-    const firstPt = segments[0][0];
-    const lastSeg = segments[segments.length - 1];
-    const lastPt = lastSeg[lastSeg.length - 1];
-    fillD = `M${firstPt.x.toFixed(1)},${firstPt.y.toFixed(1)} ` +
-      segments.map(seg => seg.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")).join(" ") +
-      ` L${lastPt.x.toFixed(1)},${PAD.t+iH} L${firstPt.x.toFixed(1)},${PAD.t+iH} Z`;
+  if (ptsWithValue.length >= 2) {
+    const pts = allPoints.map((p, i) => ({
+      x: toX(i),
+      y: p.value !== null ? toY(p.value) : null,
+    }));
+    // Solo conectar puntos con valor
+    const validPts = pts.filter(p => p.y !== null);
+    pathD = validPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    const fp = validPts[0], lp = validPts[validPts.length - 1];
+    fillD = `${pathD} L${lp.x.toFixed(1)},${PAD.t+iH} L${fp.x.toFixed(1)},${PAD.t+iH} Z`;
   }
 
   // Punto hover en SVG
@@ -192,15 +186,6 @@ export function LineChart({ snapshots, prices, positions, hideAmounts }) {
               <stop offset="100%" stopColor={isUp ? "#22c55e" : "#ef4444"} stopOpacity="0"/>
             </linearGradient>
           </defs>
-
-          {/* Línea base horizontal en zona sin datos */}
-          {firstWithValue && (
-            <line
-              x1={PAD.l} y1={toY(firstWithValue.value)}
-              x2={toX(allPoints.findIndex(p => p.value !== null))} y2={toY(firstWithValue.value)}
-              stroke="var(--surface3)" strokeWidth="1.5" strokeDasharray="4,4"
-            />
-          )}
 
           <path d={fillD} fill="url(#cg)"/>
           <path d={pathD} fill="none" stroke={lineColor} strokeWidth="2" strokeLinejoin="round"/>
