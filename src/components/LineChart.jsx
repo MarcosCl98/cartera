@@ -9,9 +9,18 @@ import { fmt, fmtEur } from "../utils/format";
 import { HideAmount } from "./ui";
 
 // Genera todos los días del rango con valor null si no hay snapshot
-function buildFullRange(snapshots, rangeLabel) {
+function buildFullRange(snapshotsRaw, rangeLabel) {
   const now = new Date();
   const start = new Date();
+
+  // Ordenar snapshots cronológicamente (Supabase los devuelve en orden alfabético)
+  const snapshots = [...snapshotsRaw].sort((a, b) => {
+    const [da, ma] = a.date.split("/").map(Number);
+    const [db, mb] = b.date.split("/").map(Number);
+    const yearA = ma > now.getMonth() + 1 ? now.getFullYear() - 1 : now.getFullYear();
+    const yearB = mb > now.getMonth() + 1 ? now.getFullYear() - 1 : now.getFullYear();
+    return new Date(yearA, ma-1, da) - new Date(yearB, mb-1, db);
+  });
 
   if (rangeLabel === "1S") start.setDate(now.getDate() - 6);
   else if (rangeLabel === "1M") start.setDate(now.getDate() - 29);
@@ -20,8 +29,9 @@ function buildFullRange(snapshots, rangeLabel) {
   else if (rangeLabel === "1A") start.setDate(now.getDate() - 364);
   else if (rangeLabel === "5A") start.setDate(now.getDate() - 364 * 5);
 
-  // Mapa de snapshots por fecha — normalizar a dd/mm
+  // Normalizar y ordenar snapshots por fecha real
   const snapMap = {};
+  const now2 = new Date();
   snapshots.forEach(s => {
     const [d, m] = s.date.split("/").map(Number);
     const key = `${String(d).padStart(2,"0")}/${String(m).padStart(2,"0")}`;
